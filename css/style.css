@@ -1,0 +1,261 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+/* Core Color Tokens */
+:root {
+  --bg-primary: #080c14;
+  --bg-secondary: #0f172a;
+  --bg-card: rgba(15, 23, 42, 0.65);
+  --border-card: rgba(255, 255, 255, 0.08);
+  --border-glow: rgba(99, 102, 241, 0.25);
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --primary-glow: rgba(99, 102, 241, 0.4);
+  
+  --accent-teal: #14b8a6;
+  --accent-teal-glow: rgba(20, 184, 166, 0.3);
+  
+  --accent-rose: #f43f5e;
+  --accent-rose-glow: rgba(244, 63, 94, 0.3);
+  
+  --accent-gold: #f59e0b;
+  --accent-gold-glow: rgba(245, 158, 11, 0.3);
+
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) var(--bg-primary);
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(20, 184, 166, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(244, 63, 94, 0.03) 0%, transparent 60%);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-card);
+  border-radius: 99px;
+  transition: all 0.3s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Glassmorphism Card Style */
+.glass-card {
+  background: rgba(10, 16, 32, 0.90);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 16px 48px 0 rgba(0, 0, 0, 0.60);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(99, 102, 241, 0.35);
+  box-shadow: 0 16px 48px 0 rgba(99, 102, 241, 0.15);
+}
+
+.glass-card-glow-teal:hover {
+  border-color: rgba(20, 184, 166, 0.3);
+  box-shadow: 0 12px 40px 0 rgba(20, 184, 166, 0.12);
+}
+
+.glass-card-glow-rose:hover {
+  border-color: rgba(244, 63, 94, 0.3);
+  box-shadow: 0 12px 40px 0 rgba(244, 63, 94, 0.12);
+}
+
+.glass-card-glow-gold:hover {
+  border-color: rgba(245, 158, 11, 0.3);
+  box-shadow: 0 12px 40px 0 rgba(245, 158, 11, 0.12);
+}
+
+/* Interactive Subject Cards */
+.subject-card {
+  cursor: pointer;
+}
+.subject-card.active {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--primary);
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+}
+
+/* Radial Gauge Animations */
+.gpa-circle {
+  transition: stroke-dashoffset 0.8s ease-in-out;
+}
+
+/* Slider Controls Styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 99px;
+  background: var(--bg-primary);
+  outline: none;
+  margin: 10px 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 10px var(--primary-glow);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  background: #fff;
+  box-shadow: 0 0 15px #fff;
+}
+
+/* Grade Tags Colors */
+.grade-O { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; box-shadow: 0 0 10px var(--accent-gold-glow); }
+.grade-A-plus { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #fff; box-shadow: 0 0 10px rgba(139, 92, 246, 0.4); }
+.grade-A { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
+.grade-B-plus { background: linear-gradient(135deg, #06b6d4, #0891b2); color: #fff; box-shadow: 0 0 10px rgba(6, 182, 212, 0.4); }
+.grade-B { background: linear-gradient(135deg, #10b981, #047857); color: #fff; box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+.grade-C { background: linear-gradient(135deg, #64748b, #475569); color: #fff; box-shadow: 0 0 10px rgba(100, 116, 139, 0.4); }
+.grade-D { background: linear-gradient(135deg, #f97316, #ea580c); color: #fff; box-shadow: 0 0 10px rgba(249, 115, 22, 0.4); }
+.grade-E, .grade-F { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; box-shadow: 0 0 10px var(--accent-rose-glow); }
+
+/* Absolute / Slide-in Drawer Style */
+.drawer {
+  position: fixed;
+  top: 0;
+  right: -420px;
+  width: 420px;
+  height: 100vh;
+  background: rgba(10, 15, 30, 0.95);
+  backdrop-filter: blur(24px);
+  border-left: 1px solid var(--border-card);
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 30px;
+  overflow-y: auto;
+}
+
+.drawer.open {
+  right: 0;
+}
+
+.drawer-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 90;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.drawer-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Status Badges */
+.badge-pass {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.badge-fail {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.badge-reappear {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* ThreeJS Canvas styling */
+#three-canvas {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Relative grading Bell Curve Curve */
+.bell-curve-path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawBell 2s forwards ease-in-out;
+}
+
+@keyframes drawBell {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.bell-user-line {
+  transition: x1 0.3s ease, x2 0.3s ease, y1 0.3s ease, y2 0.3s ease;
+}
+
+/* Neon Text glow */
+.neon-text {
+  text-shadow: 0 0 10px rgba(99, 102, 241, 0.5), 0 0 20px rgba(99, 102, 241, 0.3);
+}
+
+.neon-text-teal {
+  text-shadow: 0 0 10px rgba(20, 184, 166, 0.5), 0 0 20px rgba(20, 184, 166, 0.3);
+}
+
+/* Responsive grid layout adjustments */
+@media (max-width: 1024px) {
+  .drawer {
+    width: 100%;
+    right: -100%;
+  }
+}
