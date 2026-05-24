@@ -252,10 +252,70 @@ input[type="range"]::-webkit-slider-thumb:hover {
   text-shadow: 0 0 10px rgba(20, 184, 166, 0.5), 0 0 20px rgba(20, 184, 166, 0.3);
 }
 
-/* Responsive grid layout adjustments */
-@media (max-width: 1024px) {
-  .drawer {
+/* Premium Responsive Media Queries for Mobile & Tablet */
+@media (max-width: 768px) {
+  /* Save horizontal padding on narrow viewports */
+  body {
+    padding: 0;
+  }
+  main {
+    padding: 1rem !important;
+    gap: 1.25rem !important;
+  }
+  
+  /* Compact cards padding on mobile to maximize viewable area */
+  .glass-card {
+    padding: 1.25rem !important;
+    border-radius: 12px;
+  }
+  
+  /* Hero section adjustments */
+  section.lg:col-span-12 {
+    padding: 1.5rem !important;
+    min-h-[auto] !important;
+    text-align: center;
+  }
+  
+  /* Center backlog sentinel in mobile hero */
+  #backlog-tracker-panel {
+    margin: 0 auto;
     width: 100%;
-    right: -100%;
+  }
+  
+  /* Semester Tabs compact grid */
+  #semester-tabs-container button {
+    padding: 0.5rem 0.25rem !important;
+    font-size: 9px !important;
+    border-radius: 8px;
+  }
+  
+  /* Metrics card responsiveness */
+  .relative.z-10.flex {
+    width: 100%;
+    justify-content: center;
+    padding: 1.25rem !important;
+  }
+
+  /* Core headers sizing */
+  h2 {
+    font-size: 1.75rem !important;
+    line-height: 1.2 !important;
+  }
+  h3 {
+    font-size: 1.15rem !important;
+  }
+  
+  /* Make sure inputs and sliders are touch-friendly */
+  input[type="range"]::-webkit-slider-thumb {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1200px) {
+  /* Tablet optimization: nice spacing & grid columns balance */
+  main {
+    max-width: 100% !important;
+    padding: 1.5rem !important;
   }
 }
