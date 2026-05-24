@@ -5,7 +5,7 @@ let scene, camera, renderer;
 let centralCore, outerShell, starPoints, ringGroup;
 let ring1, ring2, ring3;
 let shootingStars = [];
-const MAX_SHOOTING_STARS = 4;
+const MAX_SHOOTING_STARS = 12;
 
 let targetRotationX = 0;
 let targetRotationY = 0;
@@ -36,28 +36,69 @@ function initThreeScene() {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   container.appendChild(renderer.domElement);
 
-  // 4. Create Starfield Particle System
-  const starCount = 900;
-  const starGeometry = new THREE.BufferGeometry();
-  const starPositions = new Float32Array(starCount * 3);
-
-  for (let i = 0; i < starCount * 3; i += 3) {
-    starPositions[i] = (Math.random() - 0.5) * 60;     // X
-    starPositions[i + 1] = (Math.random() - 0.5) * 40; // Y
-    starPositions[i + 2] = (Math.random() - 0.8) * 45; // Z (Pushed slightly into back depth)
+  // 4. Create Multi-Layered Deep Space Starfields
+  // Layer A: Dense background dust stars (white)
+  const countA = 1200;
+  const geomA = new THREE.BufferGeometry();
+  const posA = new Float32Array(countA * 3);
+  for (let i = 0; i < countA * 3; i += 3) {
+    posA[i] = (Math.random() - 0.5) * 70;
+    posA[i + 1] = (Math.random() - 0.5) * 50;
+    posA[i + 2] = (Math.random() - 0.8) * 55;
   }
-
-  starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-
-  const starMaterial = new THREE.PointsMaterial({
+  geomA.setAttribute('position', new THREE.BufferAttribute(posA, 3));
+  const matA = new THREE.PointsMaterial({
     color: 0xffffff,
-    size: 0.08,
+    size: 0.04,
     transparent: true,
-    opacity: 0.35,
+    opacity: 0.65,
     sizeAttenuation: true
   });
+  const starsA = new THREE.Points(geomA, matA);
 
-  starPoints = new THREE.Points(starGeometry, starMaterial);
+  // Layer B: Medium glowing stellar particles (cyan/teal tint)
+  const countB = 400;
+  const geomB = new THREE.BufferGeometry();
+  const posB = new Float32Array(countB * 3);
+  for (let i = 0; i < countB * 3; i += 3) {
+    posB[i] = (Math.random() - 0.5) * 60;
+    posB[i + 1] = (Math.random() - 0.5) * 40;
+    posB[i + 2] = (Math.random() - 0.6) * 45;
+  }
+  geomB.setAttribute('position', new THREE.BufferAttribute(posB, 3));
+  const matB = new THREE.PointsMaterial({
+    color: 0x99f6e4, // Teal glow
+    size: 0.07,
+    transparent: true,
+    opacity: 0.80,
+    sizeAttenuation: true
+  });
+  const starsB = new THREE.Points(geomB, matB);
+
+  // Layer C: Bright stars (soft amber/gold twinkling stars)
+  const countC = 150;
+  const geomC = new THREE.BufferGeometry();
+  const posC = new Float32Array(countC * 3);
+  for (let i = 0; i < countC * 3; i += 3) {
+    posC[i] = (Math.random() - 0.5) * 50;
+    posC[i + 1] = (Math.random() - 0.5) * 35;
+    posC[i + 2] = (Math.random() - 0.4) * 35;
+  }
+  geomC.setAttribute('position', new THREE.BufferAttribute(posC, 3));
+  const matC = new THREE.PointsMaterial({
+    color: 0xfde047, // Yellow/gold
+    size: 0.12,
+    transparent: true,
+    opacity: 0.90,
+    sizeAttenuation: true
+  });
+  const starsC = new THREE.Points(geomC, matC);
+
+  // Keep a reference to starPoints for rotations in animate loop
+  starPoints = new THREE.Group();
+  starPoints.add(starsA);
+  starPoints.add(starsB);
+  starPoints.add(starsC);
   scene.add(starPoints);
 
   // 5. Create Central Complex Geodesic Core
@@ -68,7 +109,7 @@ function initThreeScene() {
     roughness: 0.1,
     wireframe: true,
     transparent: true,
-    opacity: 0.28
+    opacity: 0.55
   });
   centralCore = new THREE.Mesh(coreGeometry, coreMaterial);
   scene.add(centralCore);
@@ -79,7 +120,7 @@ function initThreeScene() {
     color: 0xffffff,
     wireframe: true,
     transparent: true,
-    opacity: 0.04
+    opacity: 0.10
   });
   outerShell = new THREE.Mesh(shellGeometry, shellMaterial);
   scene.add(outerShell);
@@ -88,9 +129,9 @@ function initThreeScene() {
   ringGroup = new THREE.Group();
   scene.add(ringGroup);
 
-  const ringMaterial1 = new THREE.MeshBasicMaterial({ color: 0x6366f1, transparent: true, opacity: 0.18, wireframe: true });
-  const ringMaterial2 = new THREE.MeshBasicMaterial({ color: 0x14b8a6, transparent: true, opacity: 0.18, wireframe: true });
-  const ringMaterial3 = new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.15, wireframe: true });
+  const ringMaterial1 = new THREE.MeshBasicMaterial({ color: 0x6366f1, transparent: true, opacity: 0.35, wireframe: true });
+  const ringMaterial2 = new THREE.MeshBasicMaterial({ color: 0x14b8a6, transparent: true, opacity: 0.35, wireframe: true });
+  const ringMaterial3 = new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.28, wireframe: true });
 
   ring1 = new THREE.Mesh(new THREE.TorusGeometry(3.0, 0.015, 8, 100), ringMaterial1);
   ring1.rotation.x = Math.PI / 4;
@@ -251,6 +292,10 @@ function animateThreeScene() {
   if (starPoints) {
     starPoints.rotation.y += 0.00025;
     starPoints.rotation.x += 0.0001;
+    // Twinkling effect for amber/gold stars (Layer C)
+    if (starPoints.children && starPoints.children[2]) {
+      starPoints.children[2].material.opacity = 0.60 + Math.sin(time * 7.5) * 0.30;
+    }
   }
 
   if (centralCore && outerShell) {
@@ -285,21 +330,22 @@ function animateThreeScene() {
   // 3. Animate dynamic trailing shooting stars
   shootingStars.forEach(star => {
     if (!star.active) {
-      // Trigger a shooting star with a small probability
-      if (Math.random() < 0.0025) {
+      // Trigger a shooting star with a higher probability (more frequent)
+      if (Math.random() < 0.015) {
         star.active = true;
         // Launch from top-left boundary
-        star.x = -22 + Math.random() * 12;
-        star.y = 12 + Math.random() * 5;
-        star.z = -2 - Math.random() * 12; // Pushed deep to remain in background
+        star.x = -24 + Math.random() * 14;
+        star.y = 14 + Math.random() * 6;
+        // Bring closer to foreground to make them much larger, faster, and more visible
+        star.z = (Math.random() - 0.5) * 6;
 
         // Vector pointing down-right
         const angle = -Math.PI / 6 + (Math.random() - 0.5) * 0.08; // ~ -30 degrees
-        const speed = 0.22 + Math.random() * 0.28;
+        const speed = 0.38 + Math.random() * 0.42;
         star.vx = Math.cos(angle) * speed;
         star.vy = Math.sin(angle) * speed;
         star.vz = 0;
-        star.length = 2.5 + Math.random() * 2.0;
+        star.length = 4.5 + Math.random() * 3.5;
         star.opacity = 1.0;
       }
     } else {
@@ -308,8 +354,8 @@ function animateThreeScene() {
       star.y += star.vy;
       star.z += star.vz;
 
-      // Fading opacity trail
-      star.opacity -= 0.016;
+      // Fading opacity trail (slower fade for a longer trail)
+      star.opacity -= 0.010;
       if (star.opacity <= 0) star.opacity = 0;
 
       // Reset when faded out or off-screen bounds

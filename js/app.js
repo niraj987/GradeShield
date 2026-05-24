@@ -57,6 +57,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 5. Initial render & math run
   recalculateAll();
+
+  // 6. Setup space/HUD view toggle
+  const toggleHudBtn = document.getElementById("toggle-hud-btn");
+  const mainWrapper = document.querySelector("main");
+  let hudVisible = true;
+
+  if (toggleHudBtn && mainWrapper) {
+    toggleHudBtn.addEventListener("click", () => {
+      hudVisible = !hudVisible;
+      if (!hudVisible) {
+        gsap.to(mainWrapper, { opacity: 0.04, filter: "blur(5px)", scale: 0.98, pointerEvents: "none", duration: 0.6, ease: "power2.out" });
+        toggleHudBtn.innerHTML = "📊 Show HUD";
+      } else {
+        gsap.to(mainWrapper, { opacity: 1, filter: "blur(0px)", scale: 1.0, pointerEvents: "auto", duration: 0.6, ease: "power2.out" });
+        toggleHudBtn.innerHTML = "🌌 View Space";
+      }
+    });
+  }
   
   // Stagger animate cards in on page load
   gsap.from(".subject-card", {
@@ -486,7 +504,7 @@ function renderSubjectCards(courses) {
 
     // Sliders Panel (Always visible and rendered inside each card)
     const slidersContainer = document.createElement("div");
-    slidersContainer.className = "mt-4 flex flex-col gap-3.5 bg-slate-950/45 p-4 rounded-xl border border-white/5";
+    slidersContainer.className = "mt-4 flex flex-col gap-3.5 bg-slate-950/20 p-4 rounded-xl border border-white/5";
     
     // Render interactive input sliders
     course.components.forEach((comp, compIdx) => {
