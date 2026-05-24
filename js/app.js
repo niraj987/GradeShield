@@ -27,6 +27,18 @@ const cgpaGaugeCircle = document.getElementById("cgpa-gauge-circle");
 const focusLeverageContainer = document.getElementById("focus-leverage-container");
 const focusAdvisorResults = document.getElementById("focus-advisor-results");
 
+// Wipes all active curriculum raw scores to 0 on initial page load
+function initializeScoresToZero() {
+  Object.keys(state.curriculum).forEach(semKey => {
+    state.curriculum[semKey].forEach(course => {
+      course.obtainedGrade = null;
+      course.components.forEach(comp => {
+        comp.scored = 0;
+      });
+    });
+  });
+}
+
 // Initialize Application
 document.addEventListener("DOMContentLoaded", () => {
   // 1. Initialize Semester Selection Tabs
@@ -40,7 +52,10 @@ document.addEventListener("DOMContentLoaded", () => {
     initThreeScene();
   }
 
-  // 4. Initial render & math run
+  // 4. Wipe all grades/scores to zero for a clean slate
+  initializeScoresToZero();
+
+  // 5. Initial render & math run
   recalculateAll();
   
   // Stagger animate cards in on page load
@@ -254,19 +269,16 @@ function setupAddSubjectModal() {
   }
 }
 
-// Recalculate TGPAs, overall CGPA, Percentage, and update visual elements
-function recalculateAll() {
-  // 1. Calculate active semester TGPA
+// Calculates SGPA/CGPA, updates the dashboard numbers, focus leverage, backlog tracker, and 3D scenes.
+// Performs mathematical and metric updates ONLY, without re-rendering subject cards.
+function recalculateMetrics() {
   const activeSemesterCourses = state.curriculum[state.currentSemester];
   const activeSemRes = calculateSGPA(activeSemesterCourses, state.gradingMode, state.classMean, state.classSD);
   
   activeSemTitle.textContent = `Semester ${state.currentSemester} Curriculum`;
   semTgpaBadge.textContent = `TGPA: ${activeSemRes.sgpa.toFixed(2)}`;
-  
-  // 2. Render Subject Cards for active semester (Inline collapsible elements)
-  renderSubjectCards(activeSemesterCourses);
 
-  // 3. Compute Cumulative stats across ALL semesters
+  // Compute Cumulative stats across ALL semesters
   let cumulativeWeightedGradePoints = 0;
   let cumulativeCredits = 0;
 
@@ -297,19 +309,30 @@ function recalculateAll() {
   const finalCgpa = cumulativeCredits > 0 ? parseFloat((cumulativeWeightedGradePoints / cumulativeCredits).toFixed(2)) : 0.00;
   const finalPercentage = finalCgpa * 10;
 
-  // 4. Smooth visual transitions for CGPA dashboard metrics
+  // Smooth visual transitions for CGPA dashboard metrics
   animateDashboardNumbers(finalCgpa, finalPercentage, cumulativeCredits);
 
-  // 5. Update dynamic Study Focus Recommendations
+  // Update dynamic Study Focus Recommendations
   updateFocusRecommendations(activeSemesterCourses);
 
-  // 6. Update 3D canvas color
+  // Update 3D canvas color
   if (typeof updateThreeEmblemColor === "function") {
     updateThreeEmblemColor(finalCgpa);
   }
 
-  // 7. Update dynamic Backlog Tracker panel
+  // Update dynamic Backlog Tracker panel
   updateBacklogTracker();
+}
+
+// Full recalculation including DOM re-rendering of subject cards
+function recalculateAll() {
+  const activeSemesterCourses = state.curriculum[state.currentSemester];
+  
+  // Render Cards DOM first
+  renderSubjectCards(activeSemesterCourses);
+
+  // Compute and update global metrics
+  recalculateMetrics();
 }
 
 // Animate Overall Metrics Board values
@@ -402,6 +425,7 @@ function renderSubjectCards(courses) {
       : passingStatus.passed;
 
     const card = document.createElement("div");
+    card.id = `card-${course.code}`;
     card.className = `glass-card p-5 subject-card flex flex-col justify-between transition-all duration-300 relative overflow-hidden h-full`;
     
     // Add subtle hover borders depending on grade
@@ -415,17 +439,13 @@ function renderSubjectCards(courses) {
     if (originalGrade !== null) {
       if (isSimulating) {
         badgeHtml = `
-          <div class="flex flex-col items-end justify-center shrink-0">
-            <span class="text-[9px] text-amber-400 font-extrabold tracking-wider uppercase bg-amber-500/10 px-2.5 py-0.5 rounded border border-amber-500/20">Simulated</span>
-            <button onclick="resetCourseToOfficial('${course.code}')" class="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold underline transition-all mt-1">↻ Reset</button>
-          </div>
+          <span class="text-[9px] text-amber-400 font-extrabold tracking-wider uppercase bg-amber-500/10 px-2.5 py-0.5 rounded border border-amber-500/20">Simulated</span>
+          <button onclick="resetCourseToOfficial('${course.code}')" class="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold underline transition-all mt-1">↻ Reset</button>
         `;
       } else {
         badgeHtml = `
-          <div class="flex flex-col items-end justify-center shrink-0">
-            <span class="text-[9px] text-teal-400 font-extrabold tracking-wider uppercase bg-teal-500/10 px-2.5 py-0.5 rounded border border-teal-500/20">Official</span>
-            <span class="text-[8px] text-slate-500 mt-0.5">Drag to edit</span>
-          </div>
+          <span class="text-[9px] text-teal-400 font-extrabold tracking-wider uppercase bg-teal-500/10 px-2.5 py-0.5 rounded border border-teal-500/20">Official</span>
+          <span class="text-[8px] text-slate-500 mt-0.5">Drag to edit</span>
         `;
       }
     }
@@ -437,7 +457,7 @@ function renderSubjectCards(courses) {
       <div class="flex-1">
         <div class="flex items-center gap-2">
           <span class="text-xs font-mono font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-0.5 rounded border border-indigo-500/15">${course.code}</span>
-          <span class="text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${
+          <span class="card-status-badge text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${
             isPassed ? "badge-pass" : (grade === "E" ? "badge-reappear" : "badge-fail")
           }">
             ${isPassed ? "Passed" : (grade === "E" ? "Reappear" : "Failed")}
@@ -448,14 +468,16 @@ function renderSubjectCards(courses) {
       </div>
       
       <div class="flex items-center gap-4 text-right">
-        ${badgeHtml}
+        <div class="card-badge-container flex flex-col items-end justify-center shrink-0">
+          ${badgeHtml}
+        </div>
         <div>
           <div class="text-[9px] text-slate-500 uppercase font-semibold">Total Score</div>
-          <div class="text-sm font-extrabold font-heading text-slate-200 mt-0.5">${weightedScore}/100</div>
+          <div class="card-total-score text-sm font-extrabold font-heading text-slate-200 mt-0.5">${weightedScore}/100</div>
         </div>
         <div>
           <div class="text-[9px] text-slate-500 uppercase font-semibold">Grade</div>
-          <span class="text-xs font-extrabold px-2.5 py-0.5 rounded-md inline-block mt-0.5 grade-${grade.replace("+", "-plus")}">${grade}</span>
+          <span class="card-grade-badge text-xs font-extrabold px-2.5 py-0.5 rounded-md inline-block mt-0.5 grade-${grade.replace("+", "-plus")}">${grade}</span>
         </div>
       </div>
     `;
@@ -494,25 +516,98 @@ function renderSubjectCards(courses) {
         // Clear preloaded official grade on edit to run simulation calculations
         course.obtainedGrade = null;
         
-        // Recalculate SGPA, CGPA, and SVG curve real-time
-        recalculateAll();
+        // Dynamic in-place calculation
+        const newWeightedScore = calculateWeightedMarks(course.components);
+        const newPassingStatus = checkPassingStatus(course.components, newWeightedScore);
+        
+        let newGrade = "";
+        if (state.gradingMode === "relative") {
+          newGrade = getRelativeGrade(newWeightedScore, state.classMean, state.classSD, newPassingStatus);
+        } else {
+          newGrade = getAbsoluteGrade(newWeightedScore, newPassingStatus);
+        }
+
+        const newIsPassed = newPassingStatus.passed;
+
+        // Apply fine-grained DOM updates to the card in-place for 60 FPS performance
+        const cardElem = document.getElementById(`card-${course.code}`);
+        if (cardElem) {
+          // 1. Update glow class
+          cardElem.className = "glass-card p-5 subject-card flex flex-col justify-between transition-all duration-300 relative overflow-hidden h-full";
+          let gradeGlowClass = "glass-card-glow-teal";
+          if (newGrade === "E" || newGrade === "F") gradeGlowClass = "glass-card-glow-rose";
+          else if (newGrade === "O" || newGrade === "A+") gradeGlowClass = "glass-card-glow-gold";
+          cardElem.classList.add(gradeGlowClass);
+
+          // 2. Update status badge
+          const statusBadge = cardElem.querySelector(".card-status-badge");
+          if (statusBadge) {
+            statusBadge.className = `card-status-badge text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${
+              newIsPassed ? "badge-pass" : (newGrade === "E" ? "badge-reappear" : "badge-fail")
+            }`;
+            statusBadge.textContent = newIsPassed ? "Passed" : (newGrade === "E" ? "Reappear" : "Failed");
+          }
+
+          // 3. Update total score text
+          const totalScoreVal = cardElem.querySelector(".card-total-score");
+          if (totalScoreVal) {
+            totalScoreVal.textContent = `${newWeightedScore}/100`;
+          }
+
+          // 4. Update grade badge text and visual class
+          const gradeBadge = cardElem.querySelector(".card-grade-badge");
+          if (gradeBadge) {
+            gradeBadge.className = `card-grade-badge text-xs font-extrabold px-2.5 py-0.5 rounded-md inline-block mt-0.5 grade-${newGrade.replace("+", "-plus")}`;
+            gradeBadge.textContent = newGrade;
+          }
+
+          // 5. Update simulated badge container & reset button
+          const badgeContainer = cardElem.querySelector(".card-badge-container");
+          if (badgeContainer && originalGrade !== null) {
+            badgeContainer.innerHTML = `
+              <span class="text-[9px] text-amber-400 font-extrabold tracking-wider uppercase bg-amber-500/10 px-2.5 py-0.5 rounded border border-amber-500/20">Simulated</span>
+              <button onclick="resetCourseToOfficial('${course.code}')" class="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold underline transition-all mt-1">↻ Reset</button>
+            `;
+          }
+
+          // 6. Update alert banner container
+          const alertCont = cardElem.querySelector(".card-alert-container");
+          if (alertCont) {
+            if (!newIsPassed) {
+              alertCont.innerHTML = `
+                <div class="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-xs flex items-center gap-2 leading-tight">
+                  <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+                  <span><b>Passing Alert:</b> ${newPassingStatus.reason}</span>
+                </div>
+              `;
+            } else {
+              alertCont.innerHTML = "";
+            }
+          }
+        }
+
+        // 7. Recalculate lightweight cumulative metrics & dynamic advise panels without rebuilding cards
+        recalculateMetrics();
       });
 
       slidersContainer.appendChild(sliderGroup);
     });
 
-    // Add a detailed pass warning if requirements failed during active simulation
+    // Alert Container for warning banners
+    const alertContainer = document.createElement("div");
+    alertContainer.className = "card-alert-container mt-3 flex flex-col gap-2";
+    
     if (course.obtainedGrade === null && !passingStatus.passed) {
-      const alertBanner = document.createElement("div");
-      alertBanner.className = "p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-xs flex items-center gap-2 leading-tight";
-      alertBanner.innerHTML = `
-        <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
-        <span><b>Passing Alert:</b> ${passingStatus.reason}</span>
+      alertContainer.innerHTML = `
+        <div class="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-xs flex items-center gap-2 leading-tight">
+          <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+          <span><b>Passing Alert:</b> ${passingStatus.reason}</span>
+        </div>
       `;
-      slidersContainer.appendChild(alertBanner);
     }
 
     card.appendChild(slidersContainer);
+    card.appendChild(alertContainer);
     
     subjectCardsContainer.appendChild(card);
   });
