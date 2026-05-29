@@ -4,6 +4,7 @@
 let scene, camera, renderer;
 let centralCore, outerShell, starPoints, ringGroup;
 let ring1, ring2, ring3;
+let pointLight1, pointLight2;
 let shootingStars = [];
 const MAX_SHOOTING_STARS = 12;
 

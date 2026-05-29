@@ -40,16 +40,20 @@ function initializeScoresToZero() {
 }
 
 // Initialize Application
-document.addEventListener("DOMContentLoaded", () => {
+function bootApp() {
   // 1. Initialize Semester Selection Tabs
   renderSemesterTabs();
 
   // 2. Setup Custom Subject Modal Form
   setupAddSubjectModal();
 
-  // 3. Initialize Three.js scene
+  // 3. Initialize Three.js scene (Wrapped in try/catch to avoid blocking critical subject rendering if WebGL fails)
   if (typeof initThreeScene === "function") {
-    initThreeScene();
+    try {
+      initThreeScene();
+    } catch (e) {
+      console.warn("WebGL/Three.js failed to initialize:", e);
+    }
   }
 
   // 4. Wipe all grades/scores to zero for a clean slate
@@ -84,7 +88,14 @@ document.addEventListener("DOMContentLoaded", () => {
     stagger: 0.08,
     ease: "power2.out"
   });
-});
+}
+
+// Robust execution checking: boot immediately if DOM is already parsed/cached
+if (document.readyState === "interactive" || document.readyState === "complete") {
+  bootApp();
+} else {
+  document.addEventListener("DOMContentLoaded", bootApp);
+}
 
 // Render Semester Tabs (Sem 1 to 8)
 function renderSemesterTabs() {
