@@ -472,7 +472,7 @@ function renderSubjectCards(courses) {
 
     const card = document.createElement("div");
     card.id = `card-${course.code}`;
-    card.className = `glass-card p-5 subject-card flex flex-col justify-between transition-all duration-300 relative overflow-hidden h-full liquid-air-card`;
+    card.className = `glass-card p-5 subject-card flex flex-col justify-between relative overflow-hidden h-full liquid-air-card`;
     
     // Add subtle hover borders depending on grade
     let gradeGlowClass = "glass-card-glow-teal";
@@ -592,7 +592,7 @@ function renderSubjectCards(courses) {
         const cardElem = document.getElementById(`card-${course.code}`);
         if (cardElem) {
           // 1. Update glow class
-          cardElem.className = "glass-card p-5 subject-card flex flex-col justify-between transition-all duration-300 relative overflow-hidden h-full liquid-air-card";
+          cardElem.className = "glass-card p-5 subject-card flex flex-col justify-between relative overflow-hidden h-full liquid-air-card";
           let gradeGlowClass = "glass-card-glow-teal";
           if (newGrade === "E" || newGrade === "F") gradeGlowClass = "glass-card-glow-rose";
           else if (newGrade === "O" || newGrade === "A+") gradeGlowClass = "glass-card-glow-gold";
