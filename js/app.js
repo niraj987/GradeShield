@@ -424,9 +424,26 @@ function animateDashboardNumbers(cgpa, percentage, credits) {
   standingVal.className = `text-[10px] font-semibold px-2 py-0.5 rounded inline-block mt-1 ${standingClass}`;
 }
 
-// Render active semester subjects in a vertical list with all sliders fully visible by default
 function renderSubjectCards(courses) {
   subjectCardsContainer.innerHTML = "";
+  
+  if (!courses || courses.length === 0) {
+    subjectCardsContainer.innerHTML = `
+      <div class="col-span-full flex flex-col items-center justify-center py-16 px-6 rounded-2xl border border-dashed border-white/10 bg-white/5 text-center backdrop-blur-md">
+        <div class="w-14 h-14 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-400 mb-4 animate-pulse">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <h4 class="text-base font-extrabold text-white mb-1.5 font-heading">No Subjects Registered</h4>
+        <p class="text-xs text-slate-400 max-w-sm mb-5 leading-relaxed">You haven't defined any curriculum subjects for Semester ${state.currentSemester} yet. Build your own academic roadmap now.</p>
+        <button onclick="document.getElementById('add-custom-subject-btn').click()" class="py-2.5 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white transition-all shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 flex items-center gap-1.5 mx-auto">
+          <span>➕ Add Your First Subject</span>
+        </button>
+      </div>
+    `;
+    return;
+  }
   
   courses.forEach((course, courseIdx) => {
     const weightedScore = calculateWeightedMarks(course.components);
